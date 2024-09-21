@@ -246,10 +246,12 @@ class RollingForecast(ForecastingStrategy):
             #result of prediction
             predict = model.forecast(horizon, train)
             model_name = model.model_name
-            end_inference_time = time.time()
-            path='./TFB/dataset/predict/'+model_name+'.csv'
-            write_data(predict, path)
+            end_inference_time = time.time()            
             total_inference_time += end_inference_time - start_inference_time
+            model_name = model.model_name
+            path='./TFB/dataset/predict/'+model_name+series_name+'.csv'
+            write_data(predict, path)
+            print('predict data saved in '+path)
 
             single_series_result = self.evaluator.evaluate(
                 test.to_numpy(), predict, eval_scaler, train_valid_data.values
@@ -331,6 +333,12 @@ class RollingForecast(ForecastingStrategy):
             all_predicts.append(predicts)
 
         all_predicts = np.concatenate(all_predicts, axis=0)
+        
+        model_name = model.model_name
+        path='./TFB/dataset/predict/'+model_name+series_name+'.csv'
+        write_data(all_predicts, path)
+        print('predict data saved in '+path)
+        
         targets = batch_maker.make_batch_eval(horizon)["target"]
         if len(targets) != len(all_predicts):
             raise RuntimeError("Predictions' len don't equal targets' len!")

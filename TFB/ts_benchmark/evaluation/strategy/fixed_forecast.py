@@ -9,6 +9,7 @@ from ts_benchmark.evaluation.strategy.constants import FieldNames
 from ts_benchmark.evaluation.strategy.forecasting import ForecastingStrategy
 from ts_benchmark.models import ModelFactory
 from ts_benchmark.utils.data_processing import split_before
+from ts_benchmark.data.data_prepare import write_data
 
 
 class FixedForecast(ForecastingStrategy):
@@ -62,6 +63,8 @@ class FixedForecast(ForecastingStrategy):
         end_fit_time = time.time()
         predicted = model.forecast(horizon, train_valid_data)
         end_inference_time = time.time()
+        path='./TFB/dataset/predict/'+series_name+'.csv'
+        write_data(predicted, path)
 
         single_series_results, log_info = self.evaluator.evaluate_with_log(
             test_data.to_numpy(),
