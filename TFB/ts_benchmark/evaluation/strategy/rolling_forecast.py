@@ -13,6 +13,7 @@ from ts_benchmark.evaluation.strategy.forecasting import ForecastingStrategy
 from ts_benchmark.models import ModelFactory
 from ts_benchmark.models.model_base import BatchMaker, ModelBase
 from ts_benchmark.utils.data_processing import split_before
+from ts_benchmark.data.data_prepare import write_data
 
 
 class RollingForecastEvalBatchMaker:
@@ -241,8 +242,13 @@ class RollingForecast(ForecastingStrategy):
             test, _ = split_before(rest, horizon)
 
             start_inference_time = time.time()
+            
+            #result of prediction
             predict = model.forecast(horizon, train)
+            model_name = model.model_name
             end_inference_time = time.time()
+            path='./TFB/dataset/predict/'+model_name+'.csv'
+            write_data(predict, path)
             total_inference_time += end_inference_time - start_inference_time
 
             single_series_result = self.evaluator.evaluate(
