@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 class GlobalStorageDataServer(DataServer):
     """
     A fake data server that share all available data at once
-
     Users must ensure all target data are loaded in the data source
     before starting this server.
     """

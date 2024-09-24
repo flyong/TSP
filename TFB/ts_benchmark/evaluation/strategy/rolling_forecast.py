@@ -188,11 +188,13 @@ class RollingForecast(ForecastingStrategy):
 
         :param series: Target series to evaluate.
         :param meta_info: The corresponding meta-info.
-        :param model_factory: The factory to create models.
+        :param model_factory: Model description with name, hypermeters.
         :param series_name: the name of the target series.
         :return: The evaluation results.
         """
         model = model_factory()
+
+        # 选择批量预测还是单个预测，正式进入模型训练与预测
         if model.batch_forecast.__annotations__.get("not_implemented_batch"):
             return self._eval_sample(series, meta_info, model, series_name)
         else:
@@ -242,8 +244,8 @@ class RollingForecast(ForecastingStrategy):
             test, _ = split_before(rest, horizon)
 
             start_inference_time = time.time()
-            
-            #result of prediction
+
+            # result of prediction
             predict = model.forecast(horizon, train)
             model_name = model.model_name
             end_inference_time = time.time()            
@@ -333,12 +335,7 @@ class RollingForecast(ForecastingStrategy):
             all_predicts.append(predicts)
 
         all_predicts = np.concatenate(all_predicts, axis=0)
-        
-        model_name = model.model_name
-        path='./TFB/dataset/predict/'+model_name+series_name+'.csv'
-        write_data(all_predicts, path)
-        print('predict data saved in '+path)
-        
+
         targets = batch_maker.make_batch_eval(horizon)["target"]
         if len(targets) != len(all_predicts):
             raise RuntimeError("Predictions' len don't equal targets' len!")

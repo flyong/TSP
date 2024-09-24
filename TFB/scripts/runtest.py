@@ -24,19 +24,31 @@ command1=[
     "--timeout", "60000",
     "--save-path", "ILI/VAR"
 ]
+path = "./TFB/scripts/run_benchmark.py"
 
 command2 = [
-    "python", "./TFB/scripts/run_benchmark.py",
-    "--config-path", "rolling_forecast_config.json",
-    "--data-name-list", "gt.csv",
-    "--strategy-args", '{"horizon":24}',
-    "--model-name", "time_series_library.TimesNet",
-    "--model-hyper-params", '{"d_ff": 768, "d_model": 768, "factor": 3, "horizon": 24, "seq_len": 36, "top_k": 5}',
-    "--adapter", "transformer_adapter",
-    "--gpus", "0",
-    "--num-workers", "1",
-    "--timeout", "60000",
-    "--save-path", "ILI/TimesNet"
+    "python",
+    "./TFB/scripts/run_benchmark.py",
+    "--config-path",
+    "rolling_forecast_config.json",
+    "--data-name-list",
+    "gt.csv",
+    "--strategy-args",
+    '{"horizon":24}',
+    "--model-name",
+    "time_series_library.NLinear",
+    "--model-hyper-params",
+    '{"batch_size": 16, "d_ff": 512, "d_model": 256, "lr": 0.01, "horizon": 24, "seq_len": 36}',
+    "--adapter",
+    "transformer_adapter",
+    "--gpus",
+    "0",
+    "--num-workers",
+    "1",
+    "--timeout",
+    "60000",
+    "--save-path",
+    "FRED/NLinear",
 ]
 
 subprocess.run(command2)

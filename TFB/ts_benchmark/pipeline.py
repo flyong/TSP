@@ -137,9 +137,10 @@ def pipeline(
     data_server = GlobalStorageDataServer(data_src, ParallelBackend())
     data_server.start_async()
 
-    # modeling
+    # 这里已经实例化了用于计算的模型，但是并没有进行训练
     model_factory_list = get_models(model_config)
 
+    # Entry Point!! evaluation results including the model training, prediction, and evaluation
     result_list = [
         eval_model(model_factory, data_name_list, evaluation_config)
         for model_factory in model_factory_list

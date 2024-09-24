@@ -8,9 +8,10 @@ from ts_benchmark.baselines import ADAPTER
 logger = logging.getLogger(__name__)
 
 
-def _import_attribute(attr_path: str) -> Any:
+def _import_model(attr_path: str) -> Any:
     """
     import attribute according to a fully qualified path.
+    这里实现了对模型的加载，通过model_config中的model_name字段指定模型的路径，然后通过import_model_info函数加载模型信息。
 
     :param attr_path: A dot-separated path.
     :return: If the target attribute exists, the attribute is returned, otherwise return None.
@@ -55,7 +56,7 @@ def import_model_info(model_path: str) -> Union[Dict, Callable]:
     :param model_path: The fully qualified path to the model information.
     :return: The imported model information.
     """
-    model_info = _import_attribute(model_path)
+    model_info = _import_model(model_path)
 
     if not isinstance(model_info, (Dict, Callable)):
         raise ValueError(
@@ -68,7 +69,7 @@ def import_model_info(model_path: str) -> Union[Dict, Callable]:
 def get_model_info(model_config: Dict) -> Union[Dict, Callable]:
     """
     Obtain model information based on model configuration.
-
+    这里实现了对模型的加载，通过model_config中的model_name字段指定模型的路径，然后通过import_model_info函数加载模型信息。
     :param model_config: A dictionary that contains model configuration information. The supported fields are:
 
         - model_name: str. The path to the model information, the following paths are searched in order to
@@ -107,7 +108,7 @@ def get_model_info(model_config: Dict) -> Union[Dict, Callable]:
     if adapter_name is not None:
         if adapter_name not in ADAPTER:
             raise ValueError(f"Unknown adapter {adapter_name}")
-        model_info = _import_attribute(ADAPTER[adapter_name])(model_info)
+        model_info = _import_model(ADAPTER[adapter_name])(model_info)
 
     return model_info
 

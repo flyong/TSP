@@ -111,7 +111,7 @@ def eval_model(
     :param evaluation_config: Evaluate configuration information, including strategies, evaluation metrics, etc.
     :return: The DataFrame containing the evaluation results.
     """
-    # 获取策略类
+    # 此处的evaluation_config是一个字典，包含了评估策略的名称和对应的模型入口，通过字典的形式避免了直接调用模型入口
     strategy_class = STRATEGY.get(evaluation_config["strategy_args"]["strategy_name"])
     if strategy_class is None:
         raise RuntimeError("strategy_class is none")
@@ -144,21 +144,27 @@ def eval_model(
     # Create an evaluator instance
     evaluator = Evaluator(metric)
 
-    strategy = strategy_class(evaluation_config["strategy_args"], evaluator)  # 创建评估策略对象
+    # 此处实例化了滚动预测以及固定预测模型的入口（将真正模型的实现进行了隐藏），实际指向了rolling_forecast.py和fixed_forecast.py
+    # 对预测类进行了实例化
+    # evaluation_config["strategy_args"]是一个字典，读取了evaluation_config中的一些配置字段（需要根据需求进行修改）TODO
+    # evaluator是个类，包含了评估指标的计算方法
+    strategy = strategy_class(evaluation_config["strategy_args"], evaluator)
 
     eval_backend = ParallelBackend()
     result_list = []
+    # Schedule the evaluation task for each time series/data name
     for series_name in tqdm.tqdm(
         series_list, desc=f"scheduling {model_factory.model_name}"
     ):
         # TODO: refactor data model to optimize communication cost in parallel mode
+        # 此处的strategy.execute调用了rolling_forecast.py和fixed_forecast.py中的execute方法
         result_list.append(
             eval_backend.schedule(strategy.execute, (series_name, model_factory))
         )
 
     return EvalResult(strategy, result_list, model_factory, series_list)
 
-
+# create a DataFrame from the result list
 def build_result_df(
     result_list: List, model_factory: ModelFactory, strategy: Strategy
 ) -> pd.DataFrame:

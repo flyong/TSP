@@ -20,8 +20,10 @@ from ts_benchmark.utils.parallel import ParallelBackend
 
 sys.path.insert(0, THIRD_PARTY_PATH)
 
-warnings.filterwarnings("ignore")
+# show warning for debugging
+warnings.filterwarnings("error")
 
+# this file is the entry point for the benchmarking pipeline
 
 def build_data_config(args: argparse.Namespace, config_data: Dict) -> Dict:
     """
@@ -302,6 +304,7 @@ if __name__ == "__main__":
         worker_initializers=[init_worker],
     )
 
+    # run the pipeline
     try:
         log_filenames = pipeline(
             data_config,

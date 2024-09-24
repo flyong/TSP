@@ -17,7 +17,6 @@
             "input_chunk_length":17,
             "output_chunk_length": 14,
             "norm": false
-
         }
     },
 
