@@ -48,30 +48,36 @@ def report(report_config: dict) -> None:
         if isinstance(log_files, pd.DataFrame)
         else load_record_data(log_files, drop_columns=ARTIFACT_COLUMNS)
     )
-
-    leaderboard_df = get_leaderboard(
-        log_data,
-        report_config["report_metrics"],
-        report_config.get("aggregate_type", "mean"),
-        report_config.get("fill_type", "mean_value"),
-        report_config.get("null_value_threshold", 0.3),
-    )
-
-    num_rows = leaderboard_df.shape[0]
-    leaderboard_df.insert(0, "strategy_args", [log_data.iloc[0, 1]] * num_rows)
-
-    # Create final DataFrame and save to CSV
-
-    if report_config.get("save_path", None) is not None:
-        save_path = report_config.get("save_path", None)
-        leaderboard_df.to_csv(
-            os.path.join(
-                ROOT_PATH, "result", save_path, report_config["leaderboard_file_name"]
-            ),
-            index=False,
-        )
+    result_path = os.path.join(ROOT_PATH, "result", "report.csv")
+    # save the log data to csv using append mode
+    if os.path.exists(result_path):
+        log_data.to_csv(result_path, mode="a", header=False, index=False)
     else:
-        leaderboard_df.to_csv(
-            os.path.join(ROOT_PATH, "result", report_config["leaderboard_file_name"]),
-            index=False,
-        )
+        log_data.to_csv(result_path, index=False)
+
+    # leaderboard_df = get_leaderboard(
+    #     log_data,
+    #     report_config["report_metrics"],
+    #     report_config.get("aggregate_type", "mean"),
+    #     report_config.get("fill_type", "mean_value"),
+    #     report_config.get("null_value_threshold", 0.3),
+    # )
+
+    # num_rows = leaderboard_df.shape[0]
+    # leaderboard_df.insert(0, "strategy_args", [log_data.iloc[0, 1]] * num_rows)
+
+    # # Create final DataFrame and save to CSV
+
+    # if report_config.get("save_path", None) is not None:
+    #     save_path = report_config.get("save_path", None)
+    #     leaderboard_df.to_csv(
+    #         os.path.join(
+    #             ROOT_PATH, "result", save_path, report_config["leaderboard_file_name"]
+    #         ),
+    #         index=False,
+    #     )
+    # else:
+    #     leaderboard_df.to_csv(
+    #         os.path.join(ROOT_PATH, "result", report_config["leaderboard_file_name"]),
+    #         index=False,
+    #     )
