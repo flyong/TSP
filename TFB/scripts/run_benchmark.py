@@ -21,7 +21,7 @@ from ts_benchmark.utils.parallel import ParallelBackend
 sys.path.insert(0, THIRD_PARTY_PATH)
 
 # show warning for debugging
-warnings.filterwarnings("error")
+warnings.filterwarnings("ignore")
 
 # this file is the entry point for the benchmarking pipeline
 
@@ -294,6 +294,7 @@ if __name__ == "__main__":
     evaluation_config = build_evaluation_config(args, config_data)
     report_config = build_report_config(args, config_data)
 
+    # 配置并行计算的后端
     ParallelBackend().init(
         backend=args.eval_backend,
         n_workers=args.num_workers,
@@ -304,7 +305,7 @@ if __name__ == "__main__":
         worker_initializers=[init_worker],
     )
 
-    # run the pipeline
+    # run the pipeline 运行的入口
     try:
         log_filenames = pipeline(
             data_config,
@@ -319,6 +320,6 @@ if __name__ == "__main__":
     report_config["log_files_list"] = log_filenames
     if args.report_method == "csv":
         filename = get_unique_file_suffix()
-        leaderboard_file_name = "test_report" + filename
+        leaderboard_file_name = "evaluation_report" + filename
         report_config["leaderboard_file_name"] = leaderboard_file_name
     report(report_config, report_method=args.report_method)

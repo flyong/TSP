@@ -13,7 +13,7 @@ from ts_benchmark.evaluation.strategy.forecasting import ForecastingStrategy
 from ts_benchmark.models import ModelFactory
 from ts_benchmark.models.model_base import BatchMaker, ModelBase
 from ts_benchmark.utils.data_processing import split_before
-from ts_benchmark.data.data_prepare import write_data
+from ts_benchmark.data.data_wirter import write_data
 
 
 class RollingForecastEvalBatchMaker:
@@ -195,6 +195,7 @@ class RollingForecast(ForecastingStrategy):
         model = model_factory()
 
         # 选择批量预测还是单个预测，正式进入模型训练与预测
+        # return self._eval_sample(series, meta_info, model, series_name)
         if model.batch_forecast.__annotations__.get("not_implemented_batch"):
             return self._eval_sample(series, meta_info, model, series_name)
         else:
@@ -247,13 +248,9 @@ class RollingForecast(ForecastingStrategy):
 
             # result of prediction
             predict = model.forecast(horizon, train)
-            model_name = model.model_name
+
             end_inference_time = time.time()            
             total_inference_time += end_inference_time - start_inference_time
-            model_name = model.model_name
-            path='./TFB/dataset/predict/'+model_name+series_name+'.csv'
-            write_data(predict, path)
-            print('predict data saved in '+path)
 
             single_series_result = self.evaluator.evaluate(
                 test.to_numpy(), predict, eval_scaler, train_valid_data.values
@@ -265,6 +262,21 @@ class RollingForecast(ForecastingStrategy):
             all_rolling_actual.append(test)
             all_rolling_predict.append(inference_data)
             all_test_results.append(single_series_result)
+        model_name = model.model_name
+        # remove the end '.csv' of the series_name
+        series_name_pure = series_name[:-4]
+        # get date,hour,minute and second
+        date = str(time.strftime("%m%d%H%M%S", time.localtime()))
+
+        path = (
+            "./TFB/result/prediction/"
+            + model_name
+            + "-"
+            + series_name_pure
+            + date
+            + ".csv"
+        )
+        write_data(all_rolling_predict, path)
 
         average_inference_time = float(total_inference_time) / min(
             len(index_list), num_rollings
@@ -354,6 +366,23 @@ class RollingForecast(ForecastingStrategy):
         average_inference_time = float(total_inference_time) / min(
             len(index_list), num_rollings
         )
+
+        model_name = model.model_name
+        # remove the end '.csv' of the series_name
+        series_name_pure = series_name[:-4]
+        # get date,hour,minute and second
+        date = str(time.strftime("%m%d%H%M%S", time.localtime()))
+
+        path = (
+            "./TFB/result/prediction/"
+            + model_name
+            + "-"
+            + series_name_pure
+            + date
+            + "-batch.csv"
+        )
+        write_data(all_predicts, path)
+
         single_series_results += [
             series_name,
             end_fit_time - start_fit_time,

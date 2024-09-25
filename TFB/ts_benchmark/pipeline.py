@@ -152,6 +152,7 @@ def pipeline(
         )
     ]
 
+    # 暂存结果，后续生成报告
     log_file_names = []
     for model_factory, result_itr, model_save_name in zip(
         model_factory_list, result_list, model_save_names
