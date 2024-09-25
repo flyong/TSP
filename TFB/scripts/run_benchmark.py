@@ -294,7 +294,7 @@ if __name__ == "__main__":
     evaluation_config = build_evaluation_config(args, config_data)
     report_config = build_report_config(args, config_data)
 
-    # 配置并行计算的后端
+    # initialise the parallel backend
     ParallelBackend().init(
         backend=args.eval_backend,
         n_workers=args.num_workers,
@@ -305,7 +305,7 @@ if __name__ == "__main__":
         worker_initializers=[init_worker],
     )
 
-    # run the pipeline 运行的入口
+    # entry point for the benchmarking pipeline
     try:
         log_filenames = pipeline(
             data_config,
@@ -317,6 +317,7 @@ if __name__ == "__main__":
     finally:
         ParallelBackend().close(force=True)
 
+    # entry point for generating the report
     report_config["log_files_list"] = log_filenames
     if args.report_method == "csv":
         filename = get_unique_file_suffix()

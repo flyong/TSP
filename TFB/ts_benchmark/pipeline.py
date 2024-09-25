@@ -100,8 +100,8 @@ def pipeline(
     :param evaluation_config: Configuration for model evaluation.
     :param save_path: The relative path for saving evaluation results, relative to the result folder.
     """
+
     # prepare data
-    # TODO: move these code into the data module, after the pipeline interface is unified
     dataset_name_list = data_config.get("data_set_name", ["small_forecast"])
     if not dataset_name_list:
         dataset_name_list = ["small_forecast"]

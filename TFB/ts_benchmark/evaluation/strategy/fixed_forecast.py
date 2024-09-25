@@ -63,7 +63,21 @@ class FixedForecast(ForecastingStrategy):
         end_fit_time = time.time()
         predicted = model.forecast(horizon, train_valid_data)
         end_inference_time = time.time()
-        path='./TFB/dataset/predict/'+series_name+'.csv'
+
+        model_name = model.model_name
+        # remove the end '.csv' of the series_name
+        series_name_pure = series_name[:-4]
+        # get date,hour,minute and second
+        date = str(time.strftime("%m%d%H%M%S", time.localtime()))
+
+        path = (
+            "./TFB/result/prediction/"
+            + model_name
+            + "-"
+            + series_name_pure
+            + date
+            + ".csv"
+        )
         write_data(predicted, path)
 
         single_series_results, log_info = self.evaluator.evaluate_with_log(
