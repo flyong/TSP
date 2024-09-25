@@ -1,5 +1,7 @@
 from getTimeRange import read_excel_data,writeRangeToExcel
 import pandas as pd
+import os
+from ts_benchmark.common.constant import ROOT_PATH
 
 # data interpolation using ajacent value mean for missing data in some days
 def interpolateData(grouped_data):
@@ -18,11 +20,12 @@ def interpolateData(grouped_data):
 
 
 def runInterpolation():
-    file_path = r'/home/vsc/workspace/IDT3/Cor/dataprocess/data/groundsettlement.xlsx'
-    file_path_range=r'/home/vsc/workspace/IDT3/Cor/dataprocess/data/range.xlsx'
-    file_path_interpolated =r'/home/vsc/workspace/IDT3/Cor/dataprocess/data/interpolated.xlsx'
+    # get the root directory of the project
+    file_path = os.path.join(ROOT_PATH, "dataset", "groundsettlement.xlsx")
+    file_path_range = os.path.join(ROOT_PATH, "dataset", "range.xlsx")
+    file_path_interpolated = os.path.join(ROOT_PATH, "dataset", "interpolated.xlsx")
     sensorDataSheets = ['GroundSettlement','B1SettleM', 'B2SettleM', 'A1SettleM', 'A2SettleM','A1ConverM']
-    
+
     sensorDataSheet = sensorDataSheets[5]
     grouped_data = read_excel_data(file_path, sensorDataSheet)
     interpolated_data = interpolateData(grouped_data)
@@ -30,4 +33,4 @@ def runInterpolation():
     writeRangeToExcel(interpolated_data, file_path_interpolated, sensorDataSheet)
     return True
 
-# runInterpolation()
+runInterpolation()

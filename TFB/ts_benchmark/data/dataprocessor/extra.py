@@ -1,3 +1,6 @@
+from ts_benchmark.common.constant import ROOT_PATH
+import os
+
 def get_all_senorID():
     x = []
     for i in range(10):
@@ -119,9 +122,9 @@ def getSensorList():
 
 # function to get path list of files
 def getFilePathList():
-    data_path = r"/home/vsc/workspace/IDT3/Cor/dataprocess/data/interpolated.xlsx"
-    result_path = r"/home/vsc/workspace/IDT3/Cor/dataprocess/data/wtresult.xlsx"
-    correlation_path = r"/home/vsc/workspace/IDT3/Cor/dataprocess/data/correlation.xlsx"
-    position_path = r"/home/vsc/workspace/IDT3/Cor/dataprocess/data/position.xlsx"
-    range_path = r"/home/vsc/workspace/IDT3/Cor/dataprocess/data/range.xlsx"
+    data_path = os.path.join(ROOT_PATH, "dataset", "interpolated.xlsx")
+    result_path = os.path.join(ROOT_PATH, "dataset", "wtresult.xlsx")
+    correlation_path = os.path.join(ROOT_PATH, "dataset", "correlation.xlsx")
+    position_path = os.path.join(ROOT_PATH, "dataset", "position.xlsx")
+    range_path = os.path.join(ROOT_PATH, "dataset", "range.xlsx")
     return data_path, result_path, correlation_path, position_path, range_path
