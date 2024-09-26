@@ -15,6 +15,7 @@ from ts_benchmark.evaluation.evaluate_model import eval_model
 from ts_benchmark.models import get_models
 from ts_benchmark.recording import save_log
 from ts_benchmark.utils.parallel import ParallelBackend
+from ts_benchmark.data.dataprocessor.dataprepare import prepare_data
 
 
 @dataclass
@@ -102,6 +103,7 @@ def pipeline(
     """
 
     # prepare data
+
     dataset_name_list = data_config.get("data_set_name", ["small_forecast"])
     if not dataset_name_list:
         dataset_name_list = ["small_forecast"]
@@ -120,6 +122,7 @@ def pipeline(
 
     data_src: DataSource = PREDEFINED_DATASETS[dataset_name_list[0]].datasrc_class()
     data_name_list = data_config.get("data_name_list", None)
+    data_name_list = prepare_data()
     if not data_name_list:
         data_name_list = []
         for dataset_name in dataset_name_list:

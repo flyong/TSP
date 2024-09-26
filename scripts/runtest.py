@@ -7,7 +7,7 @@ command = [
     "--config-path",
     "rolling_forecast_config.json",
     "--data-name-list",
-    "gt.csv",
+    "test.csv",
     "--strategy-args",
     '{"horizon":60}',
     "--model-name",
