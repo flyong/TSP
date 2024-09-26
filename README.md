@@ -1,2 +1,3 @@
 # Time series prediction based on correlation analysis
-## code publised for cloud computing
+This is the resposity for time series predition in complex infrastructure system.
+The method takes the dynamically updated community network as the input.
