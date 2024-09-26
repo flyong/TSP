@@ -1,14 +1,15 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 import pywt
-from getTimeRange import read_excel_data
+from ts_benchmark.data.dataprocessor.getTimeRange import read_excel_data
 import pandas as pd
 from multiprocessing import Pool
 from statsmodels.tsa.stattools import grangercausalitytests
-from plottest import plotNetwork
+from ts_benchmark.data.dataprocessor.plottest import plotNetwork
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 import openpyxl
-import extra as ex
+import ts_benchmark.data.dataprocessor.extra as ex
 from ts_benchmark.common.constant import ROOT_PATH
 
 # fuction to realise Wavelet transformation
@@ -153,9 +154,9 @@ def getSensorList_conver():
     ]  # Sensors in tunnelA1
 
 
-# function to get the time range
-def getTimeRange():
-    start_time = "2020-11-2"
+# function to definte time range
+def get_date_range():
+    start_time = "2020-11-1"
     end_time = "2021-12-11"
     return start_time, end_time
 
@@ -219,7 +220,7 @@ def runWT():
     grouped_groundsettle = read_excel_data(data_path, sheet_name[0])
     grouped_tunnelsettle = read_excel_data(data_path, sheet_name[3])
 
-    start_time, end_time = getTimeRange()
+    start_time, end_time = get_date_range()
 
     # wavelet transformation parameters
 
@@ -263,7 +264,7 @@ def correlateSPC():
         ex.ex.getFilePathList()
     )
     groundSensorID, tunnelSensorID = ex.ex.getSensorList()
-    start_time, end_time = getTimeRange()
+    start_time, end_time = get_date_range()
 
     sheet_name = [
         "GroundSettlement",
@@ -1089,7 +1090,7 @@ def analyseCorrelation():
 
 # plotNetwork('relationMatrix2')
 
-analyseCorrelation()
+# analyseCorrelation()
 
 # runparameterTest()
 

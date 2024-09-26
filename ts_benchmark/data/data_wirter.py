@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 
-def write_data(data: any, file_path: str) -> None:
+def write_data_rolling(data: any, file_path: str) -> None:
     """
     Write any prediction data to a file.
     data can be a pandas DataFrame, a numpy array, or a list of pandas DataFrame or numpy array.
@@ -37,3 +37,11 @@ def write_data(data: any, file_path: str) -> None:
             )
             df.to_csv(file_path, mode="a", header=False, index=False)
     print(f"Predicted Data written to {file_path}")
+
+
+def write_data_fixed(data: pd.DataFrame, file_path: str) -> None:
+    """
+    write data
+    """
+    data.to_csv(file_path, index=False)
+    return None

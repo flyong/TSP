@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from getTimeRange import read_excel_data_byDate
+from ts_benchmark.data.dataprocessor.getTimeRange import read_excel_data_byDate
 import networkx as nx
 
 

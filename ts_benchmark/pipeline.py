@@ -103,7 +103,7 @@ def pipeline(
     """
 
     # prepare data
-
+    # prepare_data()
     dataset_name_list = data_config.get("data_set_name", ["small_forecast"])
     if not dataset_name_list:
         dataset_name_list = ["small_forecast"]
@@ -122,7 +122,7 @@ def pipeline(
 
     data_src: DataSource = PREDEFINED_DATASETS[dataset_name_list[0]].datasrc_class()
     data_name_list = data_config.get("data_name_list", None)
-    data_name_list = prepare_data()
+    # data_name_list=prepare_data()
     if not data_name_list:
         data_name_list = []
         for dataset_name in dataset_name_list:

@@ -13,7 +13,7 @@ from ts_benchmark.evaluation.strategy.forecasting import ForecastingStrategy
 from ts_benchmark.models import ModelFactory
 from ts_benchmark.models.model_base import BatchMaker, ModelBase
 from ts_benchmark.utils.data_processing import split_before
-from ts_benchmark.data.data_wirter import write_data
+from ts_benchmark.data.data_wirter import write_data_rolling
 
 
 class RollingForecastEvalBatchMaker:
@@ -264,19 +264,19 @@ class RollingForecast(ForecastingStrategy):
             all_test_results.append(single_series_result)
         model_name = model.model_name
         # remove the end '.csv' of the series_name
-        series_name_pure = series_name[:-4]
+        series_name_pure = series_name[:-4] + "-"
         # get date,hour,minute and second
         date = str(time.strftime("%m%d%H%M%S", time.localtime()))
 
         path = (
-            "./TFB/result/prediction/"
+            "./result/prediction/"
             + model_name
             + "-"
             + series_name_pure
             + date
-            + ".csv"
+            + "-rolling-sample.csv"
         )
-        write_data(all_rolling_predict, path)
+        write_data_rolling(all_rolling_predict, path)
 
         average_inference_time = float(total_inference_time) / min(
             len(index_list), num_rollings
@@ -369,19 +369,19 @@ class RollingForecast(ForecastingStrategy):
 
         model_name = model.model_name
         # remove the end '.csv' of the series_name
-        series_name_pure = series_name[:-4]
+        series_name_pure = series_name[:-4] + "-"
         # get date,hour,minute and second
         date = str(time.strftime("%m%d%H%M%S", time.localtime()))
 
         path = (
-            "./TFB/result/prediction/"
+            "./result/prediction/"
             + model_name
             + "-"
             + series_name_pure
             + date
-            + "-batch.csv"
+            + "-rolling-batch.csv"
         )
-        write_data(all_predicts, path)
+        write_data_rolling(all_predicts, path)
 
         single_series_results += [
             series_name,

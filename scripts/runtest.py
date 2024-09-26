@@ -3,11 +3,32 @@ import subprocess
 
 command = [
     "python",
-    "./TFB/scripts/run_benchmark.py",
+    "./scripts/run_benchmark.py",
     "--config-path",
     "rolling_forecast_config.json",
     "--data-name-list",
-    "test.csv",
+    "TSA1-26.csv",
+    "--strategy-args",
+    '{"horizon":30}',
+    "--model-name",
+    "self_impl.VAR_model",
+    "--gpus",
+    "0",
+    "--num-workers",
+    "1",
+    "--timeout",
+    "60000",
+    "--save-path",
+    "ILI/VAR",
+]
+
+command1 = [
+    "python",
+    "./scripts/run_benchmark.py",
+    "--config-path",
+    "fixed_forecast_config_daily.json",
+    "--data-name-list",
+    "gt.csv",
     "--strategy-args",
     '{"horizon":60}',
     "--model-name",
@@ -21,23 +42,11 @@ command = [
     "--save-path",
     "ILI/VAR",
 ]
-
-command1=[
-    "python", "./TFB/scripts/run_benchmark.py",
-    "--config-path", "fixed_forecast_config_daily.json",
-    "--data-name-list", "gt.csv",
-    "--strategy-args", '{"horizon":60}',
-    "--model-name", "self_impl.VAR_model",
-    "--gpus", "0",
-    "--num-workers", "1",
-    "--timeout", "60000",
-    "--save-path", "ILI/VAR"
-]
-path = "./TFB/scripts/run_benchmark.py"
+path = "./scripts/run_benchmark.py"
 
 command2 = [
     "python",
-    "./TFB/scripts/run_benchmark.py",
+    "./scripts/run_benchmark.py",
     "--config-path",
     "rolling_forecast_config.json",
     "--data-name-list",
@@ -62,7 +71,7 @@ command2 = [
 
 command3 = [
     "python",
-    "./TFB/scripts/run_benchmark.py",
+    "./scripts/run_benchmark.py",
     "--config-path",
     "rolling_forecast_config.json",
     "--data-name-list",

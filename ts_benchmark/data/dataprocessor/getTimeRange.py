@@ -7,9 +7,8 @@ def read_excel_data(file_path, sheet_name):
     excel_data = excel_file
     df = excel_data.parse(sheet_name)
     # the data has columns 'Sensor Name', 'Date', and 'Value'
-    df["Date"] = pd.to_datetime(
-        df["Date"]
-    )  # Ensure that 'Date' column is in datetime format
+    df["Date"] = pd.to_datetime(df["Date"])
+    # Ensure that 'Date' column is in datetime format
     # let the columns be 'date','value','sensorID'
     grouped = df.groupby("sensorID")
     return grouped

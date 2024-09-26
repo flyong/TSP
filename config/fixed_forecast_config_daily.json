@@ -24,7 +24,7 @@
         "metrics": ["mae", "mse", "rmse", "mape", "smape", {"name": "mase", "seasonality": 7}, "wape", "msmape"],
         "strategy_args": {
             "strategy_name": "fixed_forecast",
-            "horizon": 14,
+            "horizon": 30,
             "train_ratio_in_tv": 1,
             "seed": 2021
         }

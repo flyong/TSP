@@ -9,7 +9,7 @@ from ts_benchmark.evaluation.strategy.constants import FieldNames
 from ts_benchmark.evaluation.strategy.forecasting import ForecastingStrategy
 from ts_benchmark.models import ModelFactory
 from ts_benchmark.utils.data_processing import split_before
-from ts_benchmark.data.data_wirter import write_data
+from ts_benchmark.data.data_wirter import write_data_rolling
 
 
 class FixedForecast(ForecastingStrategy):
@@ -66,19 +66,24 @@ class FixedForecast(ForecastingStrategy):
 
         model_name = model.model_name
         # remove the end '.csv' of the series_name
-        series_name_pure = series_name[:-4]
+        series_name_pure = series_name[:-4] + "-"
         # get date,hour,minute and second
         date = str(time.strftime("%m%d%H%M%S", time.localtime()))
 
         path = (
-            "./TFB/result/prediction/"
+            "./result/prediction/"
             + model_name
             + "-"
             + series_name_pure
             + date
-            + ".csv"
+            + "-fixed.csv"
         )
-        write_data(predicted, path)
+        # write np.array to csv
+        predicted_df = pd.DataFrame(
+            predicted, columns=test_data.columns, index=test_data.index
+        )
+        predicted_df.to_csv(path, index=False)
+        # write_data_rolling(predicted, path)
 
         single_series_results, log_info = self.evaluator.evaluate_with_log(
             test_data.to_numpy(),

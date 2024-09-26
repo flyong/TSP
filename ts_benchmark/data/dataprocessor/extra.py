@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from ts_benchmark.common.constant import ROOT_PATH
 import os
 
@@ -128,5 +129,3 @@ def getFilePathList():
     position_path = os.path.join(ROOT_PATH, "dataset", "position.xlsx")
     range_path = os.path.join(ROOT_PATH, "dataset", "range.xlsx")
     return data_path, result_path, correlation_path, position_path, range_path
-
-print(getFilePathList())
