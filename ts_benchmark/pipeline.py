@@ -16,6 +16,7 @@ from ts_benchmark.models import get_models
 from ts_benchmark.recording import save_log
 from ts_benchmark.utils.parallel import ParallelBackend
 from ts_benchmark.data.dataprocessor.dataprepare import prepare_data
+from ts_benchmark.data.dataprocessor.rolling_correlate import rolling_correlate
 
 
 @dataclass
@@ -104,6 +105,10 @@ def pipeline(
 
     # prepare data
     # prepare_data()
+
+    rolling_correlate(evaluation_config)
+
+    # prepare dataset
     dataset_name_list = data_config.get("data_set_name", ["small_forecast"])
     if not dataset_name_list:
         dataset_name_list = ["small_forecast"]

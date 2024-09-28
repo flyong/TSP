@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import numpy as np
 import pywt
 from ts_benchmark.data.dataprocessor.getTimeRange import read_excel_data
@@ -11,6 +12,9 @@ from openpyxl.utils import get_column_letter
 import openpyxl
 import ts_benchmark.data.dataprocessor.extra as ex
 from ts_benchmark.common.constant import ROOT_PATH
+from ts_benchmark.data.dataprocessor.getTimeRange import get_value_range_by_date_range
+from ts_benchmark.common.constant import CONFIG_PATH
+import json
 
 # fuction to realise Wavelet transformation
 def wavelet_transform(data, wavelet_name="db2"):
@@ -33,9 +37,13 @@ def wavelet_decomposition(data, wavelet_name="db2", wavelet_level=4):
     return result
 
 
-# function to calculate the correlation coefficient between two time series
-# note the time series should have the same dimension
 def correlation_coefficient(ts1, ts2):
+    """
+    function to calculate the correlation coefficient between two time series
+    note the time series should have the same dimension
+    ts1: time series 1
+    ts2: time series 2
+    """
     cor_list = []
     for i in range(len(ts1)):
         cor_list.append(
@@ -155,10 +163,14 @@ def getSensorList_conver():
 
 
 # function to definte time range
-def get_date_range():
-    start_time = "2020-11-1"
-    end_time = "2021-12-11"
-    return start_time, end_time
+def get_date_range() -> tuple:
+    """
+    return the start date and end date of the data"""
+    with open(os.path.join(CONFIG_PATH, "common_config.json"), "r") as file:
+        common_config = json.load(file)
+    start_date = common_config["start_date"]
+    end_date = common_config["end_date"]
+    return start_date, end_date
 
 
 # function to calculate the correlation coefficient within time series
@@ -203,10 +215,13 @@ def writeCorrelationToExcel(correlation_GS_TS, file_path, sheetname):
 
 
 def runWT():
+    """
+    function to get wavelet transformation and correlation coefficient
+    """
     data_path, result_path, correlation_path, position_path, range_path = (
-        ex.ex.getFilePathList()
+        ex.getFilePathList()
     )
-    groundSensorID, tunnelSensorID = ex.ex.getSensorList()
+    groundSensorID, tunnelSensorID = ex.getSensorList()
 
     sheet_name = [
         "GroundSettlement",
@@ -256,6 +271,72 @@ def runWT():
     # calculate correlation coefficient between ground settlement and tunnel settlement
     # correlation_GS_TS= cross_correlation(ground_settlement_WF, tunnel_settlement_WF)
     # writeCorrelationToExcel(correlation_GS_TS,correlation_path,'correlationTSGS')
+
+
+def WT_correlation_by_date_range(
+    start_time, end_time, grouped_groundsettle=None, grouped_tunnelsettle=None
+) -> pd.DataFrame:
+    """
+    rewrite function to get wavelet transformation and correlation coefficient
+    start_time: str, start time of the data
+    end_time: str, end time of the data
+    grouped_groundsettle: optional, pre-grouped ground settlement data
+    grouped_tunnelsettle: optional, pre-grouped tunnel settlement data
+    """
+    data_path, result_path, correlation_path, position_path, range_path = (
+        ex.getFilePathList()
+    )
+    groundSensorID, tunnelSensorID = ex.getSensorList()
+
+    sheet_name = [
+        "GroundSettlement",
+        "B1SettleM",
+        "B2SettleM",
+        "A1SettleM",
+        "A2SettleM",
+        "A1ConverM",
+    ]
+
+    if grouped_groundsettle is None:
+        grouped_groundsettle = read_excel_data(data_path, sheet_name[0])
+        grouped_tunnelsettle = read_excel_data(data_path, sheet_name[3])
+
+    # wavelet transformation parameters
+
+    wavelet_level = 4
+    wavelet_name = "db2"
+
+    ground_settlement_WF = []
+    for groundID in groundSensorID:
+        sensor_data = grouped_groundsettle.get_group(groundID)
+        selected_data = select_data_by_time_range(sensor_data, start_time, end_time)
+        wtResult = wavelet_decomposition(
+            selected_data["value"], wavelet_name, wavelet_level
+        )
+        ground_settlement_WF.append([groundID, wtResult])
+
+    # release memory of grouped data
+    grouped_groundsettle = None
+
+    tunnel_settlement_WF = []
+    for tunnelID in tunnelSensorID:
+        sensor_data = grouped_tunnelsettle.get_group(tunnelID)
+        selected_data = select_data_by_time_range(sensor_data, start_time, end_time)
+        wtResult = wavelet_decomposition(
+            selected_data["value"], wavelet_name, wavelet_level
+        )
+        tunnel_settlement_WF.append([tunnelID, wtResult])
+
+    # release memory of grouped data
+    grouped_tunnelsettle = None
+
+    correlation_GS_TS = cross_correlation(ground_settlement_WF, tunnel_settlement_WF)
+    final_df = pd.DataFrame(
+        correlation_GS_TS,
+        columns=["groundID", "tunnelID", "1", "2", "3", "4", "5", "6", "7", "8"],
+    )
+
+    return final_df
 
 
 # calculate the correlation coefficient between ground settlement and tunnel settlement
@@ -568,7 +649,7 @@ def calculateCorrelationMatrix(
     # write the relation matrix to excel
     if writeList:
         with pd.ExcelWriter(
-            correlation_path, mode="a", engine="openpyxl", if_sheet_exists="new"
+            correlation_path, mode="a", engine="openpyxl", if_sheet_exists="replace"
         ) as writer:
             df_relation.to_excel(writer, sheet_name="relationList", index=False)
         print(
@@ -589,7 +670,7 @@ def calculateCorrelationMatrix(
         )
     else:
         with pd.ExcelWriter(
-            correlation_path, mode="a", engine="openpyxl", if_sheet_exists="new"
+            correlation_path, mode="a", engine="openpyxl", if_sheet_exists="replace"
         ) as writer:
             pivot_table.to_excel(writer, sheet_name="relationMatrix", index=True)
         print(
@@ -608,6 +689,9 @@ def testParameters(
     gcRelation,
     figureIndex=00,
 ):
+    """
+    test the parameters of the correlation matrix without writing the result to excel
+    """
     # read the correlation matrix
     data_path, result_path, correlation_path, position_path, range_path = (
         ex.getFilePathList()
@@ -733,12 +817,191 @@ def testParameters(
         writeNetworkFeatureToExcel(pd.DataFrame([NetWorkFeature]), "netfeature")
 
 
+# function to test parameters
+def rolling_calculate_correlation(start_date, end_date, write_flag=False):
+    """
+    calculate the correlation matrix with rolling window
+    """
+
+    # pre-defined parameters
+    threshold = 0.05
+    pearsonThreshold = 0.5
+    maxConnection = 5
+    minValue_GS = -5
+    minValue_TS = -5
+    distanceThreshold = 100
+    sheet_name = "relationMatrix_rolling"
+
+    data_path, result_path, correlation_path, position_path, range_path = (
+        ex.getFilePathList()
+    )
+    groundSensorID, tunnelSensorID = ex.getSensorList()
+
+    sheet_name = ex.get_sheet_name_list("interpolated.xlsx")
+
+    # avoid repeated reading of the data
+    grouped_groundsettle = read_excel_data(data_path, sheet_name[0])
+    grouped_tunnelsettle = read_excel_data(data_path, sheet_name[3])
+
+    # calculate the pearson correlation matrix
+    df_rawRelation = WT_correlation_by_date_range(
+        start_date, end_date, grouped_groundsettle, grouped_tunnelsettle
+    )
+
+    # calculate the Granger Causality matrix
+    gcRelation = calculate_GcMatrix(
+        start_date, end_date, grouped_groundsettle, grouped_tunnelsettle
+    )
+
+    # get value range in the specific time range
+
+    groundData_rangeList = get_value_range_by_date_range(
+        grouped_groundsettle, start_date, end_date
+    )
+    tunnelData_rangeList = get_value_range_by_date_range(
+        grouped_tunnelsettle, start_date, end_date
+    )
+
+    df_distance = read_excel(position_path, "distanceMatrix")
+
+    df_relation = pd.DataFrame(columns=["groundID", "tunnelID", "GCT", "relation"])
+    for groundID in groundSensorID:
+
+        groundData_range = groundData_rangeList.loc[
+            (groundData_rangeList["sensorID"] == groundID), "min_value"
+        ].values[0]
+
+        for tunnelID in tunnelSensorID:
+
+            tunnelData_range = tunnelData_rangeList.loc[
+                (tunnelData_rangeList["sensorID"] == tunnelID), "min_value"
+            ].values[0]
+
+            # get the distance between GS and TS
+            distance = df_distance.loc[
+                (df_distance["sensoraID"] == groundID), tunnelID
+            ].values[0]
+
+            # get the average Pearson correlation coefficient
+            averagePearson = (
+                df_rawRelation.loc[
+                    (df_rawRelation["groundID"] == groundID)
+                    & (df_rawRelation["tunnelID"] == tunnelID),
+                    "CR1",
+                ].values[0]
+                + df_rawRelation.loc[
+                    (df_rawRelation["groundID"] == groundID)
+                    & (df_rawRelation["tunnelID"] == tunnelID),
+                    "CR2",
+                ].values[0]
+                + df_rawRelation.loc[
+                    (df_rawRelation["groundID"] == groundID)
+                    & (df_rawRelation["tunnelID"] == tunnelID),
+                    "CR3",
+                ].values[0]
+                + df_rawRelation.loc[
+                    (df_rawRelation["groundID"] == groundID)
+                    & (df_rawRelation["tunnelID"] == tunnelID),
+                    "CR4",
+                ].values[0]
+            ) / 4
+
+            # calculate the Granger Causality
+
+            ssr_ftest = gcRelation.loc[
+                (gcRelation["groundID"] == groundID)
+                & (gcRelation["tunnelID"] == tunnelID),
+                "grrelation",
+            ].values[0]
+
+            # check the relation between GS and TS
+            if (
+                ssr_ftest < threshold
+                and distance < distanceThreshold
+                and averagePearson > pearsonThreshold
+                and groundData_range < minValue_GS
+                and tunnelData_range < minValue_TS
+            ):
+                df_relation = pd.concat(
+                    [
+                        df_relation,
+                        pd.DataFrame(
+                            [
+                                {
+                                    "groundID": groundID,
+                                    "tunnelID": tunnelID,
+                                    "GCT": ssr_ftest,
+                                    "relation": 1,
+                                }
+                            ]
+                        ),
+                    ],
+                    ignore_index=True,
+                )
+            else:
+                df_relation = pd.concat(
+                    [
+                        df_relation,
+                        pd.DataFrame(
+                            [
+                                {
+                                    "groundID": groundID,
+                                    "tunnelID": tunnelID,
+                                    "GCT": ssr_ftest,
+                                    "relation": 0,
+                                }
+                            ]
+                        ),
+                    ],
+                    ignore_index=True,
+                )
+    if write_flag:
+        pivot_table = df_relation.pivot_table(
+            index="tunnelID", columns="groundID", values="relation"
+        )
+        with pd.ExcelWriter(
+            correlation_path, mode="a", engine="openpyxl", if_sheet_exists="replace"
+        ) as writer:
+            pivot_table.to_excel(writer, sheet_name=sheet_name, index=True)
+
+    NetWorkFeature = analyseNetwork2(df_relation)
+    NetWorkFeature.update(
+        {
+            "threshold": threshold,
+            "pearsonThreshold": pearsonThreshold,
+            "distanceThreshold": distanceThreshold,
+            "maxConnection": maxConnection,
+            "minValue_GS": minValue_GS,
+            "minValue_TS": minValue_TS,
+            "figureIndex": figureIndex,
+            "start_date": start_date,
+            "end_date": end_date,
+        }
+    )
+
+    with open(os.path.join(CONFIG_PATH, "common_config.json"), "r") as file:
+        common_config = json.load(file)
+    figureIndex = common_config["figure_index"]
+
+    writeNetworkFeatureToExcel(pd.DataFrame([NetWorkFeature]), "netfeature")
+    plotNetwork(df_relation, figureIndex)
+    figureIndex += 1
+
+    # write the figure index to the common config file
+    with open(os.path.join(CONFIG_PATH, "common_config.json"), "w") as file:
+        common_config["figure_index"] = figureIndex
+        json.dump(common_config, file)
+
+
 # calculate gr correlation matrix
-def calculateGcMatrix(start_time, end_time):
+def calculate_GcMatrix(
+    start_time, end_time, grouped_groundsettle=None, grouped_tunnelsettle=None
+):
     # read the correlation matrix
     data_path, result_path, correlation_path, position_path, range_path = (
         ex.getFilePathList()
     )
+
     groundSensorID, tunnelSensorID = ex.getSensorList()
 
     sheet_name = [
@@ -749,8 +1012,10 @@ def calculateGcMatrix(start_time, end_time):
         "A2SettleM",
     ]
 
-    grouped_groundsettle = read_excel_data(data_path, sheet_name[0])
-    grouped_tunnelsettle = read_excel_data(data_path, sheet_name[3])
+    if grouped_groundsettle is None:
+        grouped_groundsettle = read_excel_data(data_path, sheet_name[0])
+    if grouped_tunnelsettle is None:
+        grouped_tunnelsettle = read_excel_data(data_path, sheet_name[3])
 
     df_grrelation = pd.DataFrame(columns=["groundID", "tunnelID", "grrelation"])
 
@@ -783,8 +1048,8 @@ def calculateGcMatrix(start_time, end_time):
                 ],
                 ignore_index=True,
             )
-    result = df_grrelation
-    return result
+
+    return df_grrelation
 
 
 # analyse network topology and features
@@ -864,7 +1129,12 @@ def analyseNetwork(data_sheet="relationMatrix2"):
 
 
 # directly analyse the network topology and features without reading from excel
-def analyseNetwork2(df_relation):
+def analyseNetwork2(df_relation) -> dict:
+    """
+    analyse the network topology and features without reading from excel
+    df_relation: pd.DataFrame, relation matrix
+
+    """
 
     groundSensorID, tunnelSensorID = ex.getSensorList()
     # calculate average degree of ground sensors
@@ -1005,8 +1275,10 @@ def calculateRelationMatrix():
             figureIndex += 1
 
 
-# test the influence of the single parameter
-def runparameterTest():
+def run_parameter_Test():
+    """
+    test the parameters for the correlation analysis
+    """
     threshold = 0.05  # threshold for Granger Causality
     pearsonThreshold = 0.8
     distanceThreshold = 100
@@ -1021,7 +1293,7 @@ def runparameterTest():
 
     # calculateCorrelationMatrix(threshold,pearsonThreshold,distanceThreshold,maxConnection,minValue_GS,minValue_TS,start_time,end_time,writeList,sheet_name)
     # result = analyseNetwork(sheet_name)
-    df_grrelation = calculateGcMatrix(start_time, end_time)
+    df_grrelation = calculate_GcMatrix(start_time, end_time)
     thresholdList = []
     for i in range(11):
         threshold = 0.04 + i * 0.01
@@ -1041,12 +1313,15 @@ def runparameterTest():
 
 
 def analyseCorrelation():
+    """
+    run the selected correlation analysis
+    """
     threshold = 0.05  # threshold for Granger Causality
     pearsonThreshold = 0.8
     distanceThreshold = 100
     maxConnection = 5
-    minValue_GS = 0
-    minValue_TS = 0
+    minValue_GS = -5
+    minValue_TS = -5
     start_time = "2020-11-2"
     end_time = "2021-12-11"
     writeList = True

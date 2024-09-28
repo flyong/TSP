@@ -1,4 +1,7 @@
 import pandas as pd
+from ts_benchmark.common.constant import ROOT_PATH
+import os
+from ts_benchmark.data.dataprocessor.extra import getFilePathList
 
 
 # function to read excel data
@@ -58,16 +61,45 @@ def getDataTimeRange(grouped):
     return final_df
 
 
+def get_value_range_by_date_range(grouped_pd, start_date, end_date):
+    """
+    Get the value range of the data in specific time range
+    """
+    results = []
+    for group in grouped_pd:
+        # get the data points in the specific time range
+        data = group[1]
+        data = data[(data["Date"] >= start_date) & (data["Date"] <= end_date)]
+        min_value = data[1]["value"].min()
+        max_value = data[1]["value"].max()
+        # get count of data points in each group
+        count = data[1].shape[0]
+        sensorID = data[0]
+        results.append([sensorID, start_date, end_date, count, min_value, max_value])
+        # transfer the list to a dataframe
+        final_df = pd.DataFrame(
+            results,
+            columns=[
+                "sensorID",
+                "start_date",
+                "end_date",
+                "count",
+                "min_value",
+                "max_value",
+            ],
+        )
+        return final_df
+
+
 def writeRangeToExcel(final_df, file_path, sheetname):
     with pd.ExcelWriter(file_path, mode="a", engine="openpyxl") as writer:
         final_df.to_excel(writer, sheet_name=sheetname, index=False)
     print(f"Data has been successfully written to sheet in {file_path}")
 
 
-# get maxium and minimum value of data
 def run():
-    file_path = r"/home/vsc/workspace/IDT3/Cor/dataprocess/data/groundsettlement.xlsx"
-    file_path_range = r"/home/vsc/workspace/IDT3/Cor/dataprocess/data/range.xlsx"
+    raw_data_path = os.path.join(ROOT_PATH, "dataset/groundsettlement.xlsx")
+    file_path_range = os.path.join(ROOT_PATH, "dataset/range.xlsx")
     sensorDataSheets = [
         "GroundSettlement",
         "B1SettleM",
@@ -83,9 +115,7 @@ def run():
     #     final_data = getDataTimeRange(grouped_data)
     #     writeRangeToExcel(final_data, file_path_range, sheet)
 
-    path_interpolated = (
-        r"/home/vsc/workspace/IDT3/Cor/dataprocess/data/interpolated.xlsx"
-    )
+    path_interpolated = os.path.join(ROOT_PATH, "dataset/interpolated.xlsx")
     # get time range for ground settlement
     final_data = getDataTimeRange(read_excel_data(path_interpolated, sheet_name))
     writeRangeToExcel(final_data, file_path_range, sheet_name)

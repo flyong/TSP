@@ -15,7 +15,7 @@ def prepare_data() -> List[str]:
 
     data_path = os.path.join(ROOT_PATH, "dataset", "interpolated.xlsx")
     correlation_path = os.path.join(ROOT_PATH, "dataset", "correlation.xlsx")
-    sheet_name_list = ["relationMatrix2", "GroundSettlement", "A1SettleM"]
+    sheet_name_list = ["relationMatrix_rolling", "GroundSettlement", "A1SettleM"]
 
     ground_settlement_data = pd.read_excel(data_path, sheet_name=sheet_name_list[1])
     ground_settlement_data = ground_settlement_data.groupby("sensorID")
@@ -28,6 +28,7 @@ def prepare_data() -> List[str]:
     excel_data = excel_data.groupby("tunnelID")
 
     # for each tunnelID, get the correlation
+    # TODO: change the date according to the rolling window
     start_date, end_date = get_date_range()
     dataset_name_list = []
     for tunnelID, group in excel_data:

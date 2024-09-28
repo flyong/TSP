@@ -121,11 +121,50 @@ def getSensorList():
     return groundSensorID, tunnelSensorID
 
 
-# function to get path list of files
-def getFilePathList():
+def getFilePathList() -> tuple:
+    """
+    Get the path of the data file
+    return data_path, result_path, correlation_path, position_path
+    """
     data_path = os.path.join(ROOT_PATH, "dataset", "interpolated.xlsx")
     result_path = os.path.join(ROOT_PATH, "dataset", "wtresult.xlsx")
     correlation_path = os.path.join(ROOT_PATH, "dataset", "correlation.xlsx")
     position_path = os.path.join(ROOT_PATH, "dataset", "position.xlsx")
     range_path = os.path.join(ROOT_PATH, "dataset", "range.xlsx")
     return data_path, result_path, correlation_path, position_path, range_path
+
+
+def get_sheet_name_list(excel_name) -> list:
+    """
+    Get the sheet name of the data file
+    """
+    # return sheet_name_list while excel name in different cases:
+    sheet_name_list = []
+    if excel_name == "interpolated.xlsx":
+        sheet_name_list = [
+            "GroundSettlement",
+            "B1SettleM",
+            "B2SettleM",
+            "A1SettleM",
+            "A2SettleM",
+            "A1ConverM",
+        ]
+    elif excel_name == "correlation.xlsx":
+        sheet_name_list = ["relationMatrix_rolling", "GroundSettlement", "A1SettleM"]
+    elif excel_name == "position.xlsx":
+        sheet_name_list = ["position"]
+    elif excel_name == "range.xlsx":
+        sheet_name_list = ["range"]
+    else:
+        sheet_name_list = []
+
+    return sheet_name_list
+
+
+def get_date_range() -> tuple:
+    """
+    Get the predefined time range of the data
+    """
+    start_time = "2020-11-1"
+    end_time = "2021-12-11"
+    return start_time, end_time
