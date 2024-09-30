@@ -3,7 +3,7 @@ import os
 from typing import List
 import pandas as pd
 from ts_benchmark.common.constant import ROOT_PATH
-from ts_benchmark.data.dataprocessor.correlateTimeSeries import get_date_range
+from ts_benchmark.data.dataprocessor.correlate_timeseries import get_date_range
 
 
 def prepare_data() -> List[str]:
@@ -79,6 +79,7 @@ def prepare_data() -> List[str]:
                 channel_name,
                 ROOT_PATH + "/dataset/channels/" + tunnelID + "_channel.csv",
             )
+            print("Data prepared for", tunnelID)
 
     return dataset_name_list
 
@@ -87,7 +88,7 @@ def write_data(data: pd.DataFrame, file_path: str) -> None:
     """
     write data
     """
-    data.to_csv(file_path, index=False, if_exists="replace")
+    data.to_csv(file_path, index=False)
     return None
 
 

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import itertools
+import json
+import os
 import time
 from typing import List, Optional, Tuple
 
@@ -7,6 +9,7 @@ import numpy as np
 import pandas as pd
 from numpy.lib.stride_tricks import sliding_window_view
 
+from ts_benchmark.common.constant import CONFIG_PATH
 from ts_benchmark.evaluation.metrics import regression_metrics
 from ts_benchmark.evaluation.strategy.constants import FieldNames
 from ts_benchmark.evaluation.strategy.forecasting import ForecastingStrategy
@@ -268,8 +271,13 @@ class RollingForecast(ForecastingStrategy):
         # get date,hour,minute and second
         date = str(time.strftime("%m%d%H%M%S", time.localtime()))
 
+        with open(os.path.join(CONFIG_PATH, "common_config.json"), "r") as file:
+            common_config = json.load(file)
+        report_index = common_config["report_index"]
+
         path = (
             "./result/prediction/"
+            + str(report_index)
             + model_name
             + "-"
             + series_name_pure
@@ -277,6 +285,11 @@ class RollingForecast(ForecastingStrategy):
             + "-rolling-sample.csv"
         )
         write_data_rolling(all_rolling_predict, path)
+
+        report_index += 1
+        with open(os.path.join(CONFIG_PATH, "common_config.json"), "w") as file:
+            common_config["report_index"] = report_index
+            json.dump(common_config, file)
 
         average_inference_time = float(total_inference_time) / min(
             len(index_list), num_rollings
@@ -373,8 +386,13 @@ class RollingForecast(ForecastingStrategy):
         # get date,hour,minute and second
         date = str(time.strftime("%m%d%H%M%S", time.localtime()))
 
+        with open(os.path.join(CONFIG_PATH, "common_config.json"), "r") as file:
+            common_config = json.load(file)
+        report_index = common_config["report_index"]
+
         path = (
             "./result/prediction/"
+            + str(report_index)
             + model_name
             + "-"
             + series_name_pure
@@ -382,6 +400,11 @@ class RollingForecast(ForecastingStrategy):
             + "-rolling-batch.csv"
         )
         write_data_rolling(all_predicts, path)
+
+        report_index += 1
+        with open(os.path.join(CONFIG_PATH, "common_config.json"), "w") as file:
+            common_config["report_index"] = report_index
+            json.dump(common_config, file)
 
         single_series_results += [
             series_name,

@@ -13,7 +13,9 @@ def test():
 
     tunnelSensorID = ['TSA1-01', 'TSA1-02', 'TSA1-03', 'TSA1-04', 'TSA1-05', 'TSA1-06', 'TSA1-07', 'TSA1-08', 'TSA1-09', 'TSA1-10', 'TSA1-11', 'TSA1-12', 'TSA1-13', 'TSA1-14', 'TSA1-15', 'TSA1-16', 'TSA1-17', 'TSA1-18', 'TSA1-19', 'TSA1-20', 'TSA1-21', 'TSA1-22', 'TSA1-23', 'TSA1-24', 'TSA1-25', 'TSA1-26', 'TSA1-27', 'TSA1-28', 'TSA1-29', 'TSA1-30', 'TSA1-31', 'TSA1-32', 'TSA1-33', 'TSA1-34', 'TSA1-35', 'TSA1-36', 'TSA1-37', 'TSA1-38', 'TSA1-39', 'TSA1-40', 'TSA1-41', 'TSA1-42', 'TSA1-43', 'TSA1-44', 'TSA1-45', 'TSA1-46', 'TSA1-47', 'TSA1-48', 'TSA1-49', 'TSA1-50', 'TSA1-51', 'TSA1-52', 'TSA1-53', 'TSA1-54', 'TSA1-55', 'TSA1-56', 'TSA1-57', 'TSA1-58', 'TSA1-59', 'TSA1-60', 'TSA1-61', 'TSA1-62', 'TSA1-63', 'TSA1-64', 'TSA1-65', 'TSA1-66', 'TSA1-67', 'TSA1-68', 'TSA1-69', 'TSA1-70', 'TSA1-70', 'TSA1-71', 'TSA1-72', 'TSA1-73', 'TSA1-74', 'TSA1-75']
     sheet_name = ['GroundSettlement', 'B1SettleM', 'B2SettleM', 'A1SettleM', 'A2SettleM']
-    data_path, result_path, correlation_path, position_path = ex.getFilePathList()
+    data_path, result_path, correlation_path, position_path, range_path = (
+        ex.getFilePathList()
+    )
 
     excel_file = pd.ExcelFile(position_path)
     excel_data = excel_file
@@ -57,18 +59,23 @@ def read_excel(file_path,sheet_name):
     return df
 
 
-def plotNetwork(figureIndex, relation_sheet):
+def plotNetwork(figureIndex, relation_sheet, result=None):
     """
     plot the network graph of the correlation matrix
     figureIndex: int, the index of the figure
     relation_sheet: str, the sheet name of the correlation matrix
     """
     testIter = 1
-    dat_path_path, result_path, correlation_path, position_path = ex.getFilePathList()
+    dat_path_path, result_path, correlation_path, position_path, range_path = (
+        ex.getFilePathList()
+    )
     position_sheet_list = ["GS_XY", "TS_A1_M_XY"]
 
     # Read correlation matrix
-    correlation_matrix = read_excel(correlation_path, relation_sheet)
+    if result is not None:
+        correlation_matrix = result
+    else:
+        correlation_matrix = read_excel(correlation_path, relation_sheet)
     groundPosition = read_excel(position_path, position_sheet_list[0])
     tunnelPosition = read_excel(position_path, position_sheet_list[1])
 
@@ -92,12 +99,25 @@ def plotNetwork(figureIndex, relation_sheet):
     # reorganise the correlation matrix in case of disorder sensorID
     relationMatrix = np.zeros((len(tunnelSensorID), len(groundSensorID)))
     i=0
-    for tunnelID in tunnelSensorID:
-        j=0
-        for groundID in groundSensorID:
-            relationMatrix[i][j] = correlation_matrix.loc[(correlation_matrix['tunnelID']==tunnelID), groundID].values[0]
-            j+=1
-        i+=1
+    if result is not None:
+        for tunnelID in tunnelSensorID:
+            j = 0
+            for groundID in groundSensorID:
+                relation = result.loc[
+                    (result["tunnelID"] == tunnelID) & (result["groundID"] == groundID)
+                ]["relation"].values[0]
+                relationMatrix[i][j] = relation
+                j += 1
+            i += 1
+    else:
+        for tunnelID in tunnelSensorID:
+            j = 0
+            for groundID in groundSensorID:
+                relationMatrix[i][j] = correlation_matrix.loc[
+                    (correlation_matrix["tunnelID"] == tunnelID), groundID
+                ].values[0]
+                j += 1
+            i += 1
 
     # Create a graph
     G = nx.Graph()
@@ -130,6 +150,6 @@ def plotNetwork(figureIndex, relation_sheet):
     plt.axis('off')  
 
     # Show the plot
-    figname = os.path.join(ROOT_PATH, "/result/image", str(figureIndex) + ".png")
+    figname = os.path.join(ROOT_PATH, "result/image", str(figureIndex) + ".png")
     plt.savefig(figname)
     print("Plot saved as", figname)

@@ -47,17 +47,17 @@ def getDataTimeRange(grouped):
         sensorID = group[0]
         results.append([sensorID, start_date, end_date, count, min_value, max_value])
         # transfer the list to a dataframe
-        final_df = pd.DataFrame(
-            results,
-            columns=[
-                "sensorID",
-                "start_date",
-                "end_date",
-                "count",
-                "min_value",
-                "max_value",
-            ],
-        )
+    final_df = pd.DataFrame(
+        results,
+        columns=[
+            "sensorID",
+            "start_date",
+            "end_date",
+            "count",
+            "min_value",
+            "max_value",
+        ],
+    )
     return final_df
 
 
@@ -70,25 +70,25 @@ def get_value_range_by_date_range(grouped_pd, start_date, end_date):
         # get the data points in the specific time range
         data = group[1]
         data = data[(data["Date"] >= start_date) & (data["Date"] <= end_date)]
-        min_value = data[1]["value"].min()
-        max_value = data[1]["value"].max()
+        min_value = data["value"].min()
+        max_value = data["value"].max()
         # get count of data points in each group
-        count = data[1].shape[0]
-        sensorID = data[0]
+        count = data.shape[0]
+        sensorID = group[0]
         results.append([sensorID, start_date, end_date, count, min_value, max_value])
         # transfer the list to a dataframe
-        final_df = pd.DataFrame(
-            results,
-            columns=[
-                "sensorID",
-                "start_date",
-                "end_date",
-                "count",
-                "min_value",
-                "max_value",
-            ],
-        )
-        return final_df
+    final_df = pd.DataFrame(
+        results,
+        columns=[
+            "sensorID",
+            "start_date",
+            "end_date",
+            "count",
+            "min_value",
+            "max_value",
+        ],
+    )
+    return final_df
 
 
 def writeRangeToExcel(final_df, file_path, sheetname):

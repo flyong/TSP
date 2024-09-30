@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
+import os, sys
 import numpy as np
 import pywt
 from ts_benchmark.data.dataprocessor.getTimeRange import read_excel_data
@@ -15,6 +15,21 @@ from ts_benchmark.common.constant import ROOT_PATH
 from ts_benchmark.data.dataprocessor.getTimeRange import get_value_range_by_date_range
 from ts_benchmark.common.constant import CONFIG_PATH
 import json
+
+
+class HiddenPrints:
+    """
+    class to hide the print output
+    """
+
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, "w")
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
+
 
 # fuction to realise Wavelet transformation
 def wavelet_transform(data, wavelet_name="db2"):
@@ -818,7 +833,9 @@ def testParameters(
 
 
 # function to test parameters
-def rolling_calculate_correlation(start_date, end_date, write_flag=False):
+def rolling_calculate_correlation(
+    start_date, end_date, write_flag=False, test_flag=False
+):
     """
     calculate the correlation matrix with rolling window
     """
@@ -830,7 +847,7 @@ def rolling_calculate_correlation(start_date, end_date, write_flag=False):
     minValue_GS = -5
     minValue_TS = -5
     distanceThreshold = 100
-    sheet_name = "relationMatrix_rolling"
+    sheet_name_correlation = "relationMatrix_rolling"
 
     data_path, result_path, correlation_path, position_path, range_path = (
         ex.getFilePathList()
@@ -843,24 +860,26 @@ def rolling_calculate_correlation(start_date, end_date, write_flag=False):
     grouped_groundsettle = read_excel_data(data_path, sheet_name[0])
     grouped_tunnelsettle = read_excel_data(data_path, sheet_name[3])
 
-    # calculate the pearson correlation matrix
-    df_rawRelation = WT_correlation_by_date_range(
-        start_date, end_date, grouped_groundsettle, grouped_tunnelsettle
-    )
-
-    # calculate the Granger Causality matrix
-    gcRelation = calculate_GcMatrix(
-        start_date, end_date, grouped_groundsettle, grouped_tunnelsettle
-    )
-
     # get value range in the specific time range
-
     groundData_rangeList = get_value_range_by_date_range(
         grouped_groundsettle, start_date, end_date
     )
     tunnelData_rangeList = get_value_range_by_date_range(
         grouped_tunnelsettle, start_date, end_date
     )
+
+    # calculate the pearson correlation matrix
+    print("Calculating the Pearson correlation matrix...")
+    df_rawRelation = WT_correlation_by_date_range(
+        start_date, end_date, grouped_groundsettle, grouped_tunnelsettle
+    )
+
+    # calculate the Granger Causality matrix
+    print(start_date, "to ", end_date, " calculating the Granger Causality matrix...")
+    with HiddenPrints():
+        gcRelation = calculate_GcMatrix(
+            start_date, end_date, grouped_groundsettle, grouped_tunnelsettle
+        )
 
     df_distance = read_excel(position_path, "distanceMatrix")
 
@@ -887,22 +906,22 @@ def rolling_calculate_correlation(start_date, end_date, write_flag=False):
                 df_rawRelation.loc[
                     (df_rawRelation["groundID"] == groundID)
                     & (df_rawRelation["tunnelID"] == tunnelID),
-                    "CR1",
+                    "1",
                 ].values[0]
                 + df_rawRelation.loc[
                     (df_rawRelation["groundID"] == groundID)
                     & (df_rawRelation["tunnelID"] == tunnelID),
-                    "CR2",
+                    "2",
                 ].values[0]
                 + df_rawRelation.loc[
                     (df_rawRelation["groundID"] == groundID)
                     & (df_rawRelation["tunnelID"] == tunnelID),
-                    "CR3",
+                    "3",
                 ].values[0]
                 + df_rawRelation.loc[
                     (df_rawRelation["groundID"] == groundID)
                     & (df_rawRelation["tunnelID"] == tunnelID),
-                    "CR4",
+                    "4",
                 ].values[0]
             ) / 4
 
@@ -918,7 +937,7 @@ def rolling_calculate_correlation(start_date, end_date, write_flag=False):
             if (
                 ssr_ftest < threshold
                 and distance < distanceThreshold
-                and averagePearson > pearsonThreshold
+                and abs(averagePearson) > pearsonThreshold
                 and groundData_range < minValue_GS
                 and tunnelData_range < minValue_TS
             ):
@@ -932,6 +951,10 @@ def rolling_calculate_correlation(start_date, end_date, write_flag=False):
                                     "tunnelID": tunnelID,
                                     "GCT": ssr_ftest,
                                     "relation": 1,
+                                    "distance": distance,
+                                    "averagePearson": averagePearson,
+                                    "groundData_range": groundData_range,
+                                    "tunnelData_range": tunnelData_range,
                                 }
                             ]
                         ),
@@ -949,6 +972,10 @@ def rolling_calculate_correlation(start_date, end_date, write_flag=False):
                                     "tunnelID": tunnelID,
                                     "GCT": ssr_ftest,
                                     "relation": 0,
+                                    "distance": distance,
+                                    "averagePearson": averagePearson,
+                                    "groundData_range": groundData_range,
+                                    "tunnelData_range": tunnelData_range,
                                 }
                             ]
                         ),
@@ -962,8 +989,21 @@ def rolling_calculate_correlation(start_date, end_date, write_flag=False):
         with pd.ExcelWriter(
             correlation_path, mode="a", engine="openpyxl", if_sheet_exists="replace"
         ) as writer:
-            pivot_table.to_excel(writer, sheet_name=sheet_name, index=True)
+            pivot_table.to_excel(writer, sheet_name=sheet_name_correlation, index=True)
 
+    # test_flag = True
+    if test_flag:
+        test_path = os.path.join(ROOT_PATH, "dataset", "test.xlsx")
+        with pd.ExcelWriter(
+            test_path, mode="a", engine="openpyxl", if_sheet_exists="replace"
+        ) as writer:
+            df_relation.to_excel(writer, sheet_name="relationList", index=False)
+        print(f"Relation matrix has been successfully written to sheet in {test_path}")
+
+    with open(os.path.join(CONFIG_PATH, "common_config.json"), "r") as file:
+        common_config = json.load(file)
+
+    figureIndex = common_config["figure_index"]
     NetWorkFeature = analyseNetwork2(df_relation)
     NetWorkFeature.update(
         {
@@ -979,12 +1019,9 @@ def rolling_calculate_correlation(start_date, end_date, write_flag=False):
         }
     )
 
-    with open(os.path.join(CONFIG_PATH, "common_config.json"), "r") as file:
-        common_config = json.load(file)
-    figureIndex = common_config["figure_index"]
-
     writeNetworkFeatureToExcel(pd.DataFrame([NetWorkFeature]), "netfeature")
-    plotNetwork(df_relation, figureIndex)
+
+    plotNetwork(figureIndex, sheet_name_correlation, df_relation)
     figureIndex += 1
 
     # write the figure index to the common config file
@@ -1369,6 +1406,6 @@ def analyseCorrelation():
 
 # runparameterTest()
 
-# TODO: rolling time range based correlation analysis
-# 1. calculate the correlation matrix for each time range
-# 2. reconduct the correlation analysis for the whole network
+# TODO: rolling time range based correlation analysis: finished
+# 1. calculate the correlation matrix for each time range: finished
+# 2. reconduct the correlation analysis for the whole network: finished

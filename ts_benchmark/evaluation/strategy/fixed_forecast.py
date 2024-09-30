@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+import json
+import os
 import time
 from typing import List, Optional
 
 import pandas as pd
 
+from ts_benchmark.common.constant import CONFIG_PATH
 from ts_benchmark.evaluation.metrics import regression_metrics
 from ts_benchmark.evaluation.strategy.constants import FieldNames
 from ts_benchmark.evaluation.strategy.forecasting import ForecastingStrategy
@@ -70,8 +73,13 @@ class FixedForecast(ForecastingStrategy):
         # get date,hour,minute and second
         date = str(time.strftime("%m%d%H%M%S", time.localtime()))
 
+        with open(os.path.join(CONFIG_PATH, "common_config.json"), "r") as file:
+            common_config = json.load(file)
+        report_index = common_config["report_index"]
+
         path = (
             "./result/prediction/"
+            + str(report_index)
             + model_name
             + "-"
             + series_name_pure
@@ -83,6 +91,12 @@ class FixedForecast(ForecastingStrategy):
             predicted, columns=test_data.columns, index=test_data.index
         )
         predicted_df.to_csv(path, index=False)
+
+        report_index += 1
+        with open(os.path.join(CONFIG_PATH, "common_config.json"), "w") as file:
+            common_config["report_index"] = report_index
+            json.dump(common_config, file)
+
         # write_data_rolling(predicted, path)
 
         single_series_results, log_info = self.evaluator.evaluate_with_log(

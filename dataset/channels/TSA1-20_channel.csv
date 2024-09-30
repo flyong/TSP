@@ -2,7 +2,8 @@ channel,sensorID
 channel_1,TSA1-20
 channel_2,GS8-1
 channel_3,GS8-2
-channel_4,GS9-10
-channel_5,GS9-2
-channel_6,GS9-5
-channel_7,GS9-6
+channel_4,GS8-3
+channel_5,GS8-7
+channel_6,GS9-10
+channel_7,GS9-5
+channel_8,GS9-6

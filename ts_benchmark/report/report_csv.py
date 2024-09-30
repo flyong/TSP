@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import json
 import os
 from typing import Union, List
 
 import pandas as pd
 
-from ts_benchmark.common.constant import ROOT_PATH
+from ts_benchmark.common.constant import CONFIG_PATH, ROOT_PATH
 from ts_benchmark.evaluation.strategy.constants import FieldNames
 from ts_benchmark.recording import load_record_data
 from ts_benchmark.report.utils.leaderboard import get_leaderboard
@@ -48,6 +49,14 @@ def report(report_config: dict) -> None:
         if isinstance(log_files, pd.DataFrame)
         else load_record_data(log_files, drop_columns=ARTIFACT_COLUMNS)
     )
+
+    with open(os.path.join(CONFIG_PATH, "common_config.json"), "r") as file:
+        common_config = json.load(file)
+    report_index = common_config["report_index"] - 1
+
+    # incert the report index into the log_data:pd.DataFrame as a new column
+    log_data.insert(0, "report_index", report_index)
+
     result_path = os.path.join(ROOT_PATH, "result", "report.csv")
     # save the log data to csv using append mode
     if os.path.exists(result_path):

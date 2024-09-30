@@ -104,11 +104,15 @@ def pipeline(
     """
 
     # prepare data
-    # prepare_data()
 
-    rolling_correlate(evaluation_config)
+    # rolling_correlate(evaluation_config)
 
     # prepare dataset
+    # prepare_data()
+
+    # test
+    # exit()
+
     dataset_name_list = data_config.get("data_set_name", ["small_forecast"])
     if not dataset_name_list:
         dataset_name_list = ["small_forecast"]
