@@ -140,7 +140,6 @@ def eval_model(
                 invalid_metrics
             )
         )
-
     # Create an evaluator instance
     evaluator = Evaluator(metric)
 

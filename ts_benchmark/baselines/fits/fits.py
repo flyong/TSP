@@ -211,6 +211,8 @@ class FITS(ModelBase):
             self.multi_forecasting_hyper_param_tune(train_valid_data)
 
         setattr(self.config, "task_name", "short_term_forecast")
+
+        # Define the fits model
         self.model = FITSModel(self.config)
 
         print(

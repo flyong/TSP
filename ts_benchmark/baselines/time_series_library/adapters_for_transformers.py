@@ -250,6 +250,7 @@ class TransformerAdapter(ModelBase):
             self.multi_forecasting_hyper_param_tune(train_valid_data)
 
         setattr(self.config, "task_name", "short_term_forecast")
+        # 在这里将sefl.model设置为了具体实例化的模型
         self.model = self.model_class(self.config)
 
         print(
@@ -336,6 +337,8 @@ class TransformerAdapter(ModelBase):
                 target = target[:, -config.horizon :, :]
                 output = output[:, -config.horizon :, :]
                 loss = criterion(output, target)
+
+                # 这里是模型实际训练的地方
 
                 loss.backward()
                 optimizer.step()

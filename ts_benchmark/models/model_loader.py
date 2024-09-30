@@ -108,6 +108,9 @@ def get_model_info(model_config: Dict) -> Union[Dict, Callable]:
     if adapter_name is not None:
         if adapter_name not in ADAPTER:
             raise ValueError(f"Unknown adapter {adapter_name}")
+        #!!这里首先加载的是adapter，然后再加载model,然后对adapter进行实例化
+        # 这里通过Adapter字典的形式进一步将adapter隐藏了
+        # 通过model_info来初始化adapter（是一个basemodel）
         model_info = _import_model(ADAPTER[adapter_name])(model_info)
 
     return model_info
@@ -201,6 +204,10 @@ def get_models(all_model_config: Dict) -> List[ModelFactory]:
     model_factory_list = []  # Store a list of model factories
     # Traverse each model configuration
     for model_config in all_model_config["models"]:
+
+        # Obtain model based on model name
+        # 通过model_config中的model_name字段指定模型的路径，然后通过get_model_info函数加载模型信息。
+        # 这里添加了adapter字段，用于包装模型信息
         model_info = get_model_info(model_config)  # Obtain model information
         fallback_model_name = model_config["model_name"].split(".")[-1]
 
@@ -225,7 +232,7 @@ def get_models(all_model_config: Dict) -> List[ModelFactory]:
             required_hyper_params,
             model_config,
         )
-        # Add Model Factory to List
+        # Add Model Factory to List, 将初始化好的模型包装为ModelFactory对象
         model_factory_list.append(
             ModelFactory(model_name, model_factory, model_hyper_params)
         )

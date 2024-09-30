@@ -149,10 +149,11 @@ def pipeline(
     data_server = GlobalStorageDataServer(data_src, ParallelBackend())
     data_server.start_async()
 
-    # 这里已经实例化了用于计算的模型，但是并没有进行训练
+    # 这里已经实例化了用于计算的模型，但是并没有进行训练: model_factory_list是一个列表，包含了所有的模型实例（核心模型）
+    # 如果模型是基于transformer的,则会调用transformer_adapter.py中的transformer_adapter
     model_factory_list = get_models(model_config)
 
-    # Entry Point!! evaluation results including the model training, prediction, and evaluation
+    # Entry Point!! evaluation results including the model training, prediction, and evaluation训练以及预测入口
     result_list = [
         eval_model(model_factory, data_name_list, evaluation_config)
         for model_factory in model_factory_list

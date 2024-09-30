@@ -88,7 +88,6 @@ class ModelBase(metaclass=abc.ABCMeta):
         """
         Returns the name of the model.
         """
-
         pass
 
     def __repr__(self):

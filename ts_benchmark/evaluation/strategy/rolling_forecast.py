@@ -231,11 +231,13 @@ class RollingForecast(ForecastingStrategy):
         train_length, test_length = self._get_split_lens(series, meta_info, tv_ratio)
         train_valid_data, test_data = split_before(series, train_length)
 
+        # train the model
         start_fit_time = time.time()
         fit_method = model.forecast_fit if hasattr(model, "forecast_fit") else model.fit
         fit_method(train_valid_data, train_ratio_in_tv=train_ratio_in_tv)
         end_fit_time = time.time()
 
+        # normalise the data and divide the training data
         eval_scaler = self._get_eval_scaler(train_valid_data, train_ratio_in_tv)
 
         index_list = self._get_index(train_length, test_length, horizon, stride)
@@ -244,6 +246,7 @@ class RollingForecast(ForecastingStrategy):
         all_rolling_actual = []
         all_rolling_predict = []
         for i, index in itertools.islice(enumerate(index_list), num_rollings):
+            # split the data into train, test by rolling window (shown as index)
             train, rest = split_before(series, index)
             test, _ = split_before(rest, horizon)
 
