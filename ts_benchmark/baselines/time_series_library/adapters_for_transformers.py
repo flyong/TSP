@@ -278,6 +278,7 @@ class TransformerAdapter(ModelBase):
                     columns=valid_data.columns,
                     index=valid_data.index,
                 )
+            # note: should keep the rolling window size if the forecast horizon is larger
             valid_dataset, valid_data_loader = forecasting_data_provider(
                 valid_data,
                 config,

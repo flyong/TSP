@@ -197,8 +197,9 @@ class RollingForecast(ForecastingStrategy):
         """
         model = model_factory()
 
-        # 选择批量预测还是单个预测，正式进入模型训练与预测
-        # return self._eval_sample(series, meta_info, model, series_name)
+        # 选择batch预测还是sample预测，正式进入模型训练与预测
+        # default is sample forecast
+        return self._eval_sample(series, meta_info, model, series_name)
         if model.batch_forecast.__annotations__.get("not_implemented_batch"):
             return self._eval_sample(series, meta_info, model, series_name)
         else:

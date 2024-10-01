@@ -194,6 +194,7 @@ def forecasting_data_provider(data, config, timeenc, batch_size, shuffle, drop_l
         timeenc=timeenc,
         freq=config.freq,
     )
+
     data_loader = DataLoader(
         dataset,
         batch_size=batch_size,
@@ -203,8 +204,6 @@ def forecasting_data_provider(data, config, timeenc, batch_size, shuffle, drop_l
     )
 
     return dataset, data_loader
-
-
 class DatasetForTransformer:
     def __init__(
         self,
@@ -231,6 +230,7 @@ class DatasetForTransformer:
         Returns the length of the data loader.
 
         :return: The length of the data loader.
+        : note: for small dataset, the validation set length may not be enough
         """
         return len(self.dataset) - self.history_length - self.prediction_length + 1
 
@@ -307,4 +307,3 @@ def anomaly_detection_data_provider(data, batch_size, win_size=100, step=100, mo
                              num_workers=0,
                              drop_last=False)
     return data_loader
-

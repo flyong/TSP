@@ -94,6 +94,31 @@ command3 = [
     "FRED/NLinear",
 ]
 
-subprocess.run(command)
+command4 = [
+    "python",
+    "./scripts/run_benchmark.py",
+    "--config-path",
+    "rolling_forecast_config.json",
+    "--data-name-list",
+    "TSA1-26.csv",
+    "--strategy-args",
+    '{"horizon":30}',
+    "--model-name",
+    "time_series_library.FiLM",
+    "--model-hyper-params",
+    '{"dropout": 0.05, "factor": 3, "lr": 0.01, "moving_avg": 25, "num_epochs": 60, "patience": 10, "horizon": 30, "seq_len": 60, "d_ff": 2048, "d_model": 512}',
+    "--adapter",
+    "transformer_adapter",
+    "--gpus",
+    "0",
+    "--num-workers",
+    "1",
+    "--timeout",
+    "60000",
+    "--save-path",
+    "ILI/FiLM",
+]
+
+subprocess.run(command4)
 
 # subprocess.run(command)
