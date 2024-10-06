@@ -248,6 +248,7 @@ class RollingForecast(ForecastingStrategy):
         all_rolling_predict = []
         for i, index in itertools.islice(enumerate(index_list), num_rollings):
             # split the data into train, test by rolling window (shown as index)
+            # it may cause the last window to be smaller than the horizon
             train, rest = split_before(series, index)
             test, _ = split_before(rest, horizon)
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from ts_benchmark.common.constant import ROOT_PATH
+import json
+from ts_benchmark.common.constant import CONFIG_PATH, ROOT_PATH
 import os
 
 def get_all_senorID():
@@ -165,6 +166,8 @@ def get_date_range() -> tuple:
     """
     Get the predefined time range of the data
     """
-    start_time = "2020-11-1"
-    end_time = "2021-12-11"
-    return start_time, end_time
+    with open(os.path.join(CONFIG_PATH, "common_config.json"), "r") as file:
+        common_config = json.load(file)
+    start_date = common_config["start_date"]
+    end_date = common_config["end_date"]
+    return start_date, end_date

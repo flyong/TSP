@@ -27,7 +27,7 @@ def rolling_correlate(eveluation_config: dict, whole_lengh=False) -> list:
     dataset_range_list = []
 
     # real_start_date = end_date minus rolling length by day
-    whole_lengh = True
+    # whole_lengh = True
     if whole_lengh:
         real_end_date = end_date
         real_start_date = start_date

@@ -841,7 +841,7 @@ def rolling_calculate_correlation(
     """
 
     # pre-defined parameters
-    threshold = 0.05
+    threshold = 0.07
     pearsonThreshold = 0.5
     maxConnection = 5
     minValue_GS = -5

@@ -14,7 +14,7 @@
         ],
         "recommend_model_hyper_params": {
             "input_chunk_length": 96,
-            "output_chunk_length": 336,
+            "output_chunk_length": 30,
             "add_relative_index": true,
             "norm": true
         }
@@ -24,10 +24,12 @@
         "metrics": "all",
         "strategy_args": {
             "strategy_name": "rolling_forecast",
-            "horizon": 30,
+            "horizon": 36,
             "tv_ratio": 0.8,
-            "train_ratio_in_tv": {"ETTm1.csv": 0.75, "ETTm2.csv": 0.75, "PEMS04.csv": 0.75, "PEMS08.csv": 0.75, "AQShunyi.csv": 0.75, "AQWan.csv": 0.75, "ETTh1.csv": 0.75, "ETTh2.csv": 0.75, "Solar.csv": 0.75, "__default__": 0.875},
-            "stride": 15,
+            "train_ratio_in_tv": {
+                "__default__": 0.875
+            },
+            "stride": 14,
             "num_rollings": 120,
             "seed": 2021 
         }
