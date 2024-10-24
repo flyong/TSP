@@ -166,6 +166,6 @@ command6 = [
     "--save-path",
     "ILI/Crossformer",
 ]
-subprocess.run(command6)
+subprocess.run(command)
 
 # subprocess.run(command)
