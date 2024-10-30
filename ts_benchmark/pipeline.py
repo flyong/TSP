@@ -103,7 +103,7 @@ def pipeline(
     :param save_path: The relative path for saving evaluation results, relative to the result folder.
     """
 
-    # prepare data
+    # prepare data for rolling_correlate
 
     # rolling_correlate(evaluation_config)
 
